@@ -1,0 +1,116 @@
+---
+
+# This playbook is used to deploy fake backend  application based on Docker and using Jenkins
+
+# build and push builded images
+- name: Log into DockerHub
+  docker_login:
+    username: "{{ docker_hub_login }}"
+    email: "{{ docker_hub_email }}"
+    password: "{{ docker_hub_password }}"
+  tags:
+    - build
+- name: create project directory
+  file:
+    path: "{{ home }}/fakbackend"
+    state: directory
+  tags:
+    - build
+    - deploy
+- name: copy devops private key file
+  copy:
+    content: '{{ github_private_key }}'
+    dest: "{{ home }}/.ssh/id_rsa"
+    owner: centos
+  tags:
+    - build
+    - deploy
+
+- name: Retrieve student-list addons source code
+  git:
+    repo: "{{ fake_backend_source_repo  }}"
+    dest: "{{ home }}/fakbackend"
+    accept_hostkey: yes
+    force: yes
+    recursive: no
+    key_file: "{{ home }}/.ssh/id_rsa"
+    version: "{{ fake_backend_source_branch }}"
+  tags:
+    - build
+    - deploy
+
+- name: Build api image and push it to Docker Hub
+  docker_image:
+    path: "{{ home }}/fakbackend"
+#to be use if you want to push the image on docker hub
+    name: "{{ docker_hub_login }}/fake-backend"
+#to be use if you want to push the image on on a private registry
+#   name: "172.31.82.20:5000/fake-backend"
+    tag: "{{ fake_backend_docker_image_tag }}"
+    push: yes
+  tags:
+    - build
+
+# docker network
+
+- name: create docker network to interconnect containers
+  docker_network:
+    name: fake-backend_network
+  tags:
+    - deploy
+
+# deploy Database
+
+- name: Deploy database
+  docker_container:
+    name: dbpsu
+    image: mysql:5.7
+    state: started
+    env:
+       MYSQL_ROOT_PASSWORD: rootpwdpsu
+       MYSQL_DATABASE: battleboat
+       MYSQL_USER: battleuser
+       MYSQL_PASSWORD: battlepass
+
+    volumes:
+      - "{{ home }}/mysql_data:/var/lib/mysql"
+
+    networks:
+      - name: fake-backend_network
+  tags:
+    - deploy
+
+
+- name: Create a volume
+  docker_volume:
+    name: mysql_data
+  tags:
+    - deploy
+
+
+# deploy api fake-backend
+- name: Deploy
+  docker_container:
+    name: battlepsu
+    hostname: battlepsu
+#to be use if you want to push the image on docker hub
+    image: "{{ docker_hub_login }}/fake-backend:{{ fake_backend_docker_image_tag }}"
+#to be use if you want to push the image on on a private registry
+#   image: "172.31.82.20:5000/fake-backend:{{fake_backend_docker_image_tag}}"
+    state: started
+    env:
+       DATABASE_HOST: "dbpsu"
+       DATABASE_PORT: "3306"
+       DATABASE_USER: "battleuser"
+       DATABASE_PASSWORD: "battlepass"
+       DATABASE_NAME: "battleboat"
+    volumes:
+      - "{{ home }}/fakbackend/fbk_static_files:/etc/backend/static"
+    links:
+      - dbpsu
+    networks:
+      - name: fake-backend_network
+    ports:
+      - "80:3000"
+  tags:
+    - deploy
