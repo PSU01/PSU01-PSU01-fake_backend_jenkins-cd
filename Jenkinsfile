@@ -76,6 +76,14 @@ pipeline {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "build" --limit build install_fake-backend.yml'
                    }
                }
+               stage("Build docker images on build host") {
+                   when {
+                      expression { GIT_BRANCH == 'origin/master' }
+                  }
+                   steps {
+                       sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "qualif" --limit preprod install_fake-backend.yml'
+                   }
+               }
                stage("Deploy app in production") {
                     when {
                        expression { GIT_BRANCH == 'origin/master' }
