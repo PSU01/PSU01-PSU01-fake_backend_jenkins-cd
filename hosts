@@ -2,6 +2,9 @@
 #localhost ansible_connection=local
 ec2-52-3-247-194.compute-1.amazonaws.com ansible_user=centos ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
+[preprod]
+ec2-34-239-207-201.compute-1.amazonaws.com ansible_user=centos ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
 [prod]
 ec2-52-3-243-163.compute-1.amazonaws.com ansible_user=centos ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 

@@ -76,6 +76,47 @@ pipeline {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "build" --limit build install_fake-backend.yml'
                    }
                }
+               stage("Deploy app in pre-production") {
+                    when {
+                       expression { GIT_BRANCH == 'origin/master' }
+                    }
+                   steps {
+                       sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "qualif" --limit preprod install_fake-backend.yml'
+                   }
+               }
+
+
+               stage("prepare test environnement"){
+                   agent any
+                   environment {
+                       CHECK_URL = "https://34.239.207.201"
+                       CMD = "curl --write-out %{http_code} --silent --output /dev/null ${CHECK_URL}"
+                   }
+               }                
+               stages {
+                   stage("Stage-One") {
+                       steps {
+                           script{
+                               sh "${CMD} > commandResult"
+                               env.status = readFile('commandResult').trim()
+                           }
+                       }
+                   }
+                   stage("Stage-Two") {
+                       steps {
+                           script {
+                               sh "echo ${env.status}"
+                               if (env.status == '200') {
+                                   currentBuild.result = "DEPLOIEMENT SUCCESS"
+                               }
+                               else {
+                                   currentBuild.result = "FAILURE"
+                               }     
+                           }   
+                       }   
+                   }       
+                          
+               }
                stage("Deploy app in production") {
                     when {
                        expression { GIT_BRANCH == 'origin/master' }

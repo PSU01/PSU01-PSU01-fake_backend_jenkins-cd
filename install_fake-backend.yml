@@ -1,6 +1,6 @@
 ---
 - name: install docker and git
-  hosts: build prod
+  hosts: build prod preprod
   #  gather_facts: False
   become: true
   vars_files:
