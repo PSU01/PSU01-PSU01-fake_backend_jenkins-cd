@@ -29,7 +29,7 @@
     - preprod
     - prod
 
-- name: Retrieve student-list addons source code
+- name: Retrieve fakeback-end addons source code
   git:
     repo: "{{ fake_backend_source_repo  }}"
     dest: "{{ home }}/fakbackend"
@@ -85,6 +85,7 @@
   tags:
     - preprod
     - prod
+  delay: 15
 
 - name: Create a volume
   docker_volume:
