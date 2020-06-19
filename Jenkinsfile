@@ -76,7 +76,7 @@ pipeline {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "build" --limit build install_fake-backend.yml'
                    }
                }
-/*               stage("Deploy app in qualification env") {
+/*               stage("Deploy app in qualification env") {******
                    when {
                       expression { GIT_BRANCH == 'origin/master' }
                   }
