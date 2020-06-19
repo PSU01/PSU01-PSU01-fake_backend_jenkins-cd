@@ -49,7 +49,7 @@ pipeline {
                 sh 'chmod 600 id_rsa'
             }
         }
-        stage('Test and deploy the application in preproduction') {
+        stage('Test and deploy the application in qualification') {
             agent { docker { image 'registry.gitlab.com/robconnolly/docker-ansible:latest' } }
             stages {
                stage("Install ansible role dependencies") {
@@ -84,7 +84,7 @@ pipeline {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "preprod" --limit preprod install_fake-backend.yml'
                    }
                }
-               stage("Deploy app in production") {
+               stage("check app in qualification env") {
                     when {
                        expression { GIT_BRANCH == 'origin/dev' }
                     }
