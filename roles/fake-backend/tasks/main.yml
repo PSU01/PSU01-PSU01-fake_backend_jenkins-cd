@@ -17,7 +17,7 @@
   tags:
     - build
     - deploy
-    - qualif
+
 - name: copy devops private key file
   copy:
     content: '{{ github_private_key }}'
@@ -26,7 +26,7 @@
   tags:
     - build
     - deploy
-    - qualif
+
 - name: Retrieve student-list addons source code
   git:
     repo: "{{ fake_backend_source_repo  }}"
@@ -39,7 +39,6 @@
   tags:
     - build
     - deploy
-    - qualif
 
 - name: Build api image and push it to Docker Hub
   docker_image:
@@ -60,7 +59,7 @@
     name: fake-backend_network
   tags:
     - deploy
-    - qualif
+
 # deploy Database
 
 - name: Deploy database
@@ -81,14 +80,12 @@
       - name: fake-backend_network
   tags:
     - deploy
-    - qualif
 
 - name: Create a volume
   docker_volume:
     name: mysql_data
   tags:
     - deploy
-    - qualif
 
 # deploy api fake-backend
 - name: Deploy
