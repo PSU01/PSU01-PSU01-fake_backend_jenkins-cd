@@ -1,0 +1,48 @@
+---
+- name: Ensure application is deployed
+  hosts: localhost
+
+  become: true
+  vars_files:
+    - "files/secrets/devops.yml"
+
+  tasks:
+    - block:
+      - name: Check that you can connect to webpage
+        uri:
+          url: http://34.239.207.201:80
+        register: _result
+        until: _result.status == 200
+        retries: 15
+        delay: 5
+
+      - name: Check webservice application production
+        uri:
+          url: http://34.239.207.201:80/health
+          method: GET
+        register: _result1
+        until: _result1.status == 200
+        retries: 15
+        delay: 5
+      tags:
+       - preprod
+
+    - block:
+      - name: Check that you can connect to webpage
+        uri:
+          url: http://52.3.243.163:80
+        register: _result2
+        until: _result2.status == 200
+        retries: 15
+        delay: 5
+
+      - name: Check webservice application production
+        uri:
+          url: http://52.3.243.163:80/health
+          method: GET
+        register: _result3
+        until: _result3.status == 200
+        retries: 15
+        delay: 5
+      tags:
+        - prod

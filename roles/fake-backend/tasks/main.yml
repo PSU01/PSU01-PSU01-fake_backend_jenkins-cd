@@ -16,7 +16,8 @@
     state: directory
   tags:
     - build
-    - deploy
+    - preprod
+    - prod
 
 - name: copy devops private key file
   copy:
@@ -25,7 +26,8 @@
     owner: centos
   tags:
     - build
-    - deploy
+    - preprod
+    - prod
 
 - name: Retrieve student-list addons source code
   git:
@@ -38,7 +40,8 @@
     version: "{{ fake_backend_source_branch }}"
   tags:
     - build
-    - deploy
+    - preprod
+    - prod
 
 - name: Build api image and push it to Docker Hub
   docker_image:
@@ -58,7 +61,8 @@
   docker_network:
     name: fake-backend_network
   tags:
-    - deploy
+    - preprod
+    - prod
 
 # deploy Database
 
@@ -79,13 +83,15 @@
     networks:
       - name: fake-backend_network
   tags:
-    - deploy
+    - preprod
+    - prod
 
 - name: Create a volume
   docker_volume:
     name: mysql_data
   tags:
-    - deploy
+    - proprod
+    - prod
 
 # deploy api fake-backend
 - name: Deploy
@@ -112,4 +118,5 @@
     ports:
       - "80:3000"
   tags:
-    - deploy
+    - preprod
+    - prod
